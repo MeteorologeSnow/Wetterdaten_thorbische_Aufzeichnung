@@ -305,7 +305,7 @@
 
     <div class="selection-grid">
         <!-- Monatskachel -->
-        <div class="portal-card monate" id="open-monat-card" role="button" tabindex="0" aria-label="Monatsrückblick auswählen">
+        <div class="portal-card monate" id="open-monat-card" role="button" tabindex="0" aria-label="Monats- und Jahresrückblick auswählen">
             <div>
                 <div class="card-icon">📅</div>
                 <div class="card-title">Monats- & Jahreszeitenrückblicke</div>
@@ -313,7 +313,7 @@
                     Große Gesamtübersichten pro Monat und Jahreszeit inklusive DWD-Klimamittelvergleich, Extremwerten und Kenntagen.
                 </div>
             </div>
-            <button type="button" class="card-btn">Zu den Monatsberichten &rarr;</button>
+            <button type="button" id="open-monat-modal-btn" class="card-btn">Zu den Berichten &rarr;</button>
         </div>
 
         <!-- Wochenkachel -->
@@ -330,11 +330,11 @@
     </div>
 </div>
 
-<!-- Modal Monatsrückblick -->
+<!-- Modal Monats-, Jahreszeiten- & Jahresrückblick -->
 <div id="monat-modal" class="modal-overlay" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-labelledby="monat-modal-title">
         <div class="modal-header">
-            <h2 id="monat-modal-title" class="modal-title">Monatsrückblick wählen</h2>
+            <h2 id="monat-modal-title" class="modal-title">Auswertung wählen</h2>
             <button type="button" class="modal-close" data-close aria-label="Schließen">&times;</button>
         </div>
         <p class="modal-description">Wähle den gewünschten Zeitraum aus:</p>
@@ -377,31 +377,37 @@
 
     const heute = new Date();
     const aktuellesJahr = heute.getFullYear();
-    const aktuellerMonat = heute.getMonth();
+    const aktuellerMonat = heute.getMonth(); // 0 = Januar, 11 = Dezember
     const monatsNamen = [
         "Januar", "Februar", "März", "April", "Mai", "Juni",
         "Juli", "August", "September", "Oktober", "November", "Dezember"
     ];
 
-    /* Dynamic Select Options Generation */
+    /* Generierung der Dropdown-Optionen für abgelaufene Zeiträume */
     function populateSelects() {
-        // Monatsauswahl
         const monatSelect = document.getElementById('monat-select');
-        let totalOptions = 0;
 
+        // 1. Abgeschlossene Monate im aktuellen Jahr
         const optgroupMonate = document.createElement('optgroup');
-        optgroupMonate.label = "Monatsberichte";
+        optgroupMonate.label = "Abgeschlossene Monate";
 
         for (let m = aktuellerMonat - 1; m >= 0; m--) {
             const monatNummer = String(m + 1).padStart(2, '0');
             const option = new Option(`${monatsNamen[m]} ${aktuellesJahr}`, `wetter-${aktuellesJahr}/${aktuellesJahr}-${monatNummer}.html`);
             optgroupMonate.appendChild(option);
-            totalOptions++;
         }
-        if (optgroupMonate.children.length > 0) monatSelect.appendChild(optgroupMonate);
+        if (optgroupMonate.children.length > 0) {
+            monatSelect.appendChild(optgroupMonate);
+        }
 
+        // 2. Abgeschlossene meteorologische Jahreszeiten
+        // Frühling: Mär-Mai (Ende Mai -> Monat >= 5)
+        // Sommer: Jun-Aug (Ende Aug -> Monat >= 8)
+        // Herbst: Sep-Nov (Ende Nov -> Monat >= 11)
+        // Winter: Dez-Feb (Ende Feb des aktuellen Jahres -> Monat >= 2)
         const optgroupJahreszeiten = document.createElement('optgroup');
-        optgroupJahreszeiten.label = "Jahreszeiten";
+        optgroupJahreszeiten.label = "Abgeschlossene Jahreszeiten";
+
         const jahreszeiten = [
             { name: "Herbst", minMonat: 11, path: `wetter-${aktuellesJahr}/herbst-${aktuellesJahr}.html` },
             { name: "Sommer", minMonat: 8, path: `wetter-${aktuellesJahr}/sommer-${aktuellesJahr}.html` },
@@ -412,16 +418,30 @@
         jahreszeiten.forEach(jz => {
             if (aktuellerMonat >= jz.minMonat) {
                 optgroupJahreszeiten.appendChild(new Option(`${jz.name} ${aktuellesJahr}`, jz.path));
-                totalOptions++;
             }
         });
-        if (optgroupJahreszeiten.children.length > 0) monatSelect.appendChild(optgroupJahreszeiten);
-
-        if (totalOptions === 0) {
-            monatSelect.appendChild(new Option("Juli 2026", "wetter-2026/2026-07.html"));
+        if (optgroupJahreszeiten.children.length > 0) {
+            monatSelect.appendChild(optgroupJahreszeiten);
         }
 
-        // Wochenauswahl
+        // 3. Abgeschlossene Jahre (Rückblicke für vergangene Jahre)
+        const optgroupJahre = document.createElement('optgroup');
+        optgroupJahre.label = "Jahresrückblicke";
+
+        const startJahr = 2024; // Bei Bedarf anpassen
+        for (let y = aktuellesJahr - 1; y >= startJahr; y--) {
+            optgroupJahre.appendChild(new Option(`Jahresrückblick ${y}`, `wetter-${y}/jahr-${y}.html`));
+        }
+        if (optgroupJahre.children.length > 0) {
+            monatSelect.appendChild(optgroupJahre);
+        }
+
+        // Fallback falls im laufenden Januar noch kein Monat/Jahreszeit abgeschlossen ist
+        if (monatSelect.children.length === 0) {
+            monatSelect.appendChild(new Option("Keine abgeschlossenen Berichte im aktuellen Jahr verfügbar.", ""));
+        }
+
+        // 4. Wochenauswahl
         const kwSelect = document.getElementById('kw-select');
         const vorSiebenTagen = new Date(heute.getTime() - 7 * 24 * 60 * 60 * 1000);
         const { week: maxKW, year: kwJahr } = getISOWeekData(vorSiebenTagen);
@@ -431,7 +451,7 @@
         }
     }
 
-    /* Modal Engine */
+    /* Modal Steuerung */
     function initModal(modalId, triggerId, selectId, confirmBtnId) {
         const modal = document.getElementById(modalId);
         const trigger = document.getElementById(triggerId);
@@ -449,7 +469,6 @@
             modal.setAttribute('aria-hidden', 'true');
         }
 
-        // Event-Listener für Öffnen (Klick & Keyboard)
         if (trigger) {
             trigger.addEventListener('click', open);
             trigger.addEventListener('keydown', (e) => {
@@ -460,22 +479,18 @@
             });
         }
 
-        // Event-Listener für Schließen
         modal.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
         modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
 
-        // Bestätigen
         confirmBtn.addEventListener('click', () => {
             if (select.value) window.location.href = select.value;
         });
 
-        // Global Escape Key Listener
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.classList.contains('active')) close();
         });
     }
 
-    // Initialisierung
     document.addEventListener('DOMContentLoaded', () => {
         populateSelects();
         initModal('monat-modal', 'open-monat-card', 'monat-select', 'confirm-monat-modal-btn');
