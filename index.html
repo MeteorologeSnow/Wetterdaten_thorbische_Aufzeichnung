@@ -152,11 +152,74 @@
             filter: brightness(1.1);
         }
 
-        .kw-select-container {
-            margin-top: 15px;
+        /* Modal Overlay Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-main);
         }
 
         .kw-select {
@@ -170,11 +233,48 @@
             font-family: inherit;
             outline: none;
             cursor: pointer;
-            transition: border-color 0.2s ease;
+            margin-bottom: 20px;
+            box-sizing: border-box;
         }
 
         .kw-select:focus {
             border-color: var(--accent-green);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 40%;
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+
+        .btn-confirm {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 60%;
+        }
+
+        .btn-confirm:hover {
+            filter: brightness(1.1);
         }
     </style>
 </head>
@@ -206,12 +306,26 @@
                     Detailreiche Wochenauswertungen mit hochaufgelösten Temperaturverläufen, täglichen Min/Max-Werten und Wochenstatistiken.
                 </div>
             </div>
-            <div class="kw-select-container">
-                <select id="kw-select" class="kw-select">
-                    <!-- Optionen werden dynamisch via JS befüllt -->
-                </select>
-                <button id="kw-btn" class="card-btn">Öffnen &rarr;</button>
-            </div>
+            <button id="open-modal-btn" class="card-btn">Zu den Wochenberichten &rarr;</button>
+        </div>
+    </div>
+</div>
+
+<div id="kw-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Wochenrückblick wählen</h2>
+            <button id="close-modal-btn" class="modal-close">&times;</button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0; margin-bottom: 20px;">
+            Wähle die gewünschte Kalenderwoche aus:
+        </p>
+        <select id="kw-select" class="kw-select">
+            <!-- Optionen werden dynamisch via JS befüllt -->
+        </select>
+        <div class="modal-actions">
+            <button id="cancel-modal-btn" class="btn-cancel">Abbrechen</button>
+            <button id="confirm-modal-btn" class="btn-confirm">Öffnen &rarr;</button>
         </div>
     </div>
 </div>
@@ -237,7 +351,6 @@
     const jahr = letzteAbgeschlosseneKWData.year;
 
     const selectElement = document.getElementById('kw-select');
-    const btnElement = document.getElementById('kw-btn');
 
     for (let kw = maxKW; kw >= 1; kw--) {
         const option = document.createElement('option');
@@ -246,7 +359,31 @@
         selectElement.appendChild(option);
     }
 
-    btnElement.addEventListener('click', function() {
+    const modal = document.getElementById('kw-modal');
+    const openBtn = document.getElementById('open-modal-btn');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const cancelBtn = document.getElementById('cancel-modal-btn');
+    const confirmBtn = document.getElementById('confirm-modal-btn');
+
+    function openModal() {
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        modal.classList.remove('active');
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    confirmBtn.addEventListener('click', function() {
         if (selectElement.value) {
             window.location.href = selectElement.value;
         }
