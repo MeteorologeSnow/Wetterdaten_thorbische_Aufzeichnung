@@ -4,12 +4,11 @@
     <meta charset="utf-8">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Wetterstation Garten – Übersicht</title>
 
     <style>
-
         :root {
+            color-scheme: light dark;
             --bg-main: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #0f172a;
@@ -21,9 +20,7 @@
             --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.12);
         }
 
-
         @media (prefers-color-scheme: dark) {
-
             :root {
                 --bg-main: #0f172a;
                 --card-bg: #1e293b;
@@ -31,49 +28,32 @@
                 --text-muted: #94a3b8;
                 --border-color: #334155;
             }
-
         }
 
-
         body {
-            font-family:
-                'Inter',
-                -apple-system,
-                BlinkMacSystemFont,
-                'Segoe UI',
-                Roboto,
-                Helvetica,
-                Arial,
-                sans-serif;
-
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 30px 20px;
-
+            padding: 40px 20px;
             background-color: var(--bg-main);
             color: var(--text-main);
-
             line-height: 1.5;
         }
 
-
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
         }
-
 
         .header {
             text-align: center;
             margin-bottom: 40px;
         }
 
-
         .header h1 {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             font-size: 2.2rem;
             font-weight: 700;
         }
-
 
         .header p {
             margin: 0;
@@ -81,88 +61,62 @@
             font-size: 1.1rem;
         }
 
-
         .selection-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
         }
 
-
-        /* =========================================================
-           KACHELN
-           ========================================================= */
-
+        /* --- KACHELN --- */
         .portal-card {
             background: var(--card-bg);
             border-radius: 16px;
             padding: 30px;
-
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow);
-
-            transition: all 0.3s ease;
-
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-
-            color: inherit;
-
             position: relative;
             overflow: hidden;
-
             text-decoration: none;
+            cursor: pointer;
         }
-
 
         .portal-card::before {
             content: '';
-
             position: absolute;
             top: 0;
             left: 0;
-
             width: 100%;
             height: 6px;
         }
 
-
-        .portal-card.monate::before {
-            background-color: var(--accent-blue);
-        }
-
-
-        .portal-card.wochen::before {
-            background-color: var(--accent-green);
-        }
-
+        .portal-card.monate::before { background-color: var(--accent-blue); }
+        .portal-card.wochen::before { background-color: var(--accent-green); }
 
         .portal-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-4px);
             box-shadow: var(--shadow-hover);
         }
 
-
-        /* Die Monatskachel ist vollständig anklickbar */
-        .portal-card.monate {
-            cursor: pointer;
+        .portal-card:focus-visible {
+            outline: 3px solid var(--accent-blue);
+            outline-offset: 2px;
         }
-
 
         .card-icon {
             font-size: 2.5rem;
             margin-bottom: 15px;
         }
 
-
         .card-title {
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 700;
             margin-bottom: 10px;
             color: var(--text-main);
         }
-
 
         .card-desc {
             color: var(--text-muted);
@@ -171,1131 +125,362 @@
             flex-grow: 1;
         }
 
-
         .card-btn {
             display: inline-block;
-
             padding: 12px 20px;
-
             border-radius: 8px;
-
             font-weight: 600;
             font-size: 0.95rem;
-
             text-align: center;
-
-            transition: background-color 0.2s ease;
-
-            text-decoration: none;
-
             border: none;
-
             cursor: pointer;
-
             width: 100%;
-
             box-sizing: border-box;
+            transition: filter 0.2s ease;
         }
 
+        .portal-card.monate .card-btn {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+        }
 
         .portal-card.wochen .card-btn {
             background-color: var(--accent-green);
             color: #ffffff;
         }
 
-
         .portal-card:hover .card-btn {
             filter: brightness(1.1);
         }
 
-
-        /* =========================================================
-           MODAL
-           ========================================================= */
-
+        /* --- MODAL --- */
         .modal-overlay {
             position: fixed;
-
-            top: 0;
-            left: 0;
-
-            width: 100%;
-            height: 100%;
-
+            inset: 0;
             background: rgba(15, 23, 42, 0.6);
-
             backdrop-filter: blur(4px);
-
             display: flex;
-
             align-items: center;
             justify-content: center;
-
             opacity: 0;
             visibility: hidden;
-
-            transition: all 0.25s ease;
-
+            transition: opacity 0.2s ease, visibility 0.2s ease;
             z-index: 1000;
-
             padding: 20px;
-
             box-sizing: border-box;
         }
-
 
         .modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
 
-
         .modal-card {
             background: var(--card-bg);
-
             border-radius: 16px;
-
             padding: 30px;
-
             max-width: 420px;
             width: 100%;
-
             border: 1px solid var(--border-color);
-
-            box-shadow:
-                0 20px 40px rgba(0, 0, 0, 0.2);
-
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             transform: scale(0.95);
-
-            transition: transform 0.25s ease;
+            transition: transform 0.2s ease;
         }
-
 
         .modal-overlay.active .modal-card {
             transform: scale(1);
         }
 
-
         .modal-header {
             display: flex;
-
             justify-content: space-between;
             align-items: center;
-
             margin-bottom: 15px;
         }
 
-
         .modal-title {
             font-size: 1.3rem;
-
             font-weight: 700;
-
             margin: 0;
-
             color: var(--text-main);
         }
-
 
         .modal-close {
             background: none;
-
             border: none;
-
             font-size: 1.5rem;
-
             color: var(--text-muted);
-
             cursor: pointer;
-
-            padding: 0;
-
+            padding: 4px 8px;
+            border-radius: 4px;
             line-height: 1;
         }
 
-
         .modal-close:hover {
             color: var(--text-main);
+            background-color: var(--border-color);
         }
-
 
         .modal-description {
             color: var(--text-muted);
-
             font-size: 0.95rem;
-
             margin-top: 0;
             margin-bottom: 20px;
         }
 
-
-        /* =========================================================
-           AUSWAHLFELD
-           ========================================================= */
-
         .custom-select {
             width: 100%;
-
             padding: 12px 15px;
-
             border-radius: 8px;
-
             border: 1px solid var(--border-color);
-
             background-color: var(--bg-main);
-
             color: var(--text-main);
-
             font-size: 1rem;
-
             font-family: inherit;
-
             outline: none;
-
             cursor: pointer;
-
             margin-bottom: 20px;
-
             box-sizing: border-box;
         }
 
-
         .custom-select:focus {
             border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
-
 
         #kw-modal .custom-select:focus {
             border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }
-
-
-        /* =========================================================
-           BUTTONS IM MODAL
-           ========================================================= */
 
         .modal-actions {
             display: flex;
             gap: 10px;
         }
 
-
         .btn-cancel {
             background: transparent;
-
             border: 1px solid var(--border-color);
-
             color: var(--text-muted);
-
             padding: 12px 20px;
-
             border-radius: 8px;
-
             font-weight: 600;
-
             cursor: pointer;
-
             width: 40%;
+            transition: background-color 0.2s ease;
         }
 
-
         .btn-cancel:hover {
-            background-color: var(--bg-main);
+            background-color: var(--border-color);
             color: var(--text-main);
         }
 
-
         .btn-confirm {
             color: #ffffff;
-
             border: none;
-
             padding: 12px 20px;
-
             border-radius: 8px;
-
             font-weight: 600;
-
             cursor: pointer;
-
             width: 60%;
+            transition: filter 0.2s ease;
         }
 
-
-        .btn-confirm.blue {
-            background-color: var(--accent-blue);
-        }
-
-
-        .btn-confirm.green {
-            background-color: var(--accent-green);
-        }
-
+        .btn-confirm.blue { background-color: var(--accent-blue); }
+        .btn-confirm.green { background-color: var(--accent-green); }
 
         .btn-confirm:hover {
             filter: brightness(1.1);
         }
-
     </style>
 </head>
-
 
 <body>
 
 <div class="container">
-
     <div class="header">
-
         <h1>Wetterstation Garten</h1>
-
-        <p>
-            Wähle den gewünschten Auswertungszeitraum
-        </p>
-
+        <p>Wähle den gewünschten Auswertungszeitraum</p>
     </div>
-
 
     <div class="selection-grid">
-
-
-        <!-- =====================================================
-             MONATSRÜCKBLICKE
-             ===================================================== -->
-
-        <div
-            class="portal-card monate"
-            id="open-monat-card"
-            role="button"
-            tabindex="0"
-            aria-label="Monatsrückblick auswählen"
-        >
-
+        <!-- Monatskachel -->
+        <div class="portal-card monate" id="open-monat-card" role="button" tabindex="0" aria-label="Monatsrückblick auswählen">
             <div>
-
-                <div class="card-icon">
-                    📅
-                </div>
-
-                <div class="card-title">
-                    Monats- & Jahreszeitenrückblicke
-                </div>
-
+                <div class="card-icon">📅</div>
+                <div class="card-title">Monats- & Jahreszeitenrückblicke</div>
                 <div class="card-desc">
-                    Große Gesamtübersichten pro Monat und Jahreszeit
-                    inklusive DWD-Klimamittelvergleich, Extremwerten
-                    und Kenntagen.
+                    Große Gesamtübersichten pro Monat und Jahreszeit inklusive DWD-Klimamittelvergleich, Extremwerten und Kenntagen.
                 </div>
-
             </div>
-
+            <button type="button" class="card-btn">Zu den Monatsberichten &rarr;</button>
         </div>
 
-
-
-        <!-- =====================================================
-             WOCHENRÜCKBLICKE
-             ===================================================== -->
-
-        <div class="portal-card wochen">
-
+        <!-- Wochenkachel -->
+        <div class="portal-card wochen" id="open-kw-card" role="button" tabindex="0" aria-label="Wochenrückblick auswählen">
             <div>
-
-                <div class="card-icon">
-                    📈
-                </div>
-
-                <div class="card-title">
-                    Wochenrückblicke
-                </div>
-
+                <div class="card-icon">📈</div>
+                <div class="card-title">Wochenrückblicke</div>
                 <div class="card-desc">
-                    Detailreiche Wochenauswertungen mit
-                    hochaufgelösten Temperaturverläufen,
-                    täglichen Min/Max-Werten und Wochenstatistiken.
+                    Detailreiche Wochenauswertungen mit hochaufgelösten Temperaturverläufen, täglichen Min/Max-Werten und Wochenstatistiken.
                 </div>
-
             </div>
-
-
-            <button
-                type="button"
-                id="open-kw-modal-btn"
-                class="card-btn"
-            >
-                Zu den Wochenberichten &rarr;
-            </button>
-
+            <button type="button" id="open-kw-modal-btn" class="card-btn">Zu den Wochenberichten &rarr;</button>
         </div>
-
     </div>
-
 </div>
 
-
-
-<!-- ============================================================
-     MONATSRÜCKBLICK MODAL
-     ============================================================ -->
-
-<div
-    id="monat-modal"
-    class="modal-overlay"
->
-
-    <div class="modal-card">
-
-
+<!-- Modal Monatsrückblick -->
+<div id="monat-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-labelledby="monat-modal-title">
         <div class="modal-header">
-
-            <h2 class="modal-title">
-                Monatsrückblick wählen
-            </h2>
-
-
-            <button
-                type="button"
-                id="close-monat-modal-btn"
-                class="modal-close"
-                aria-label="Schließen"
-            >
-                &times;
-            </button>
-
+            <h2 id="monat-modal-title" class="modal-title">Monatsrückblick wählen</h2>
+            <button type="button" class="modal-close" data-close aria-label="Schließen">&times;</button>
         </div>
-
-
-        <p class="modal-description">
-            Wähle den gewünschten Zeitraum aus:
-        </p>
-
-
-        <select
-            id="monat-select"
-            class="custom-select"
-        ></select>
-
-
+        <p class="modal-description">Wähle den gewünschten Zeitraum aus:</p>
+        <select id="monat-select" class="custom-select"></select>
         <div class="modal-actions">
-
-            <button
-                type="button"
-                id="cancel-monat-modal-btn"
-                class="btn-cancel"
-            >
-                Abbrechen
-            </button>
-
-
-            <button
-                type="button"
-                id="confirm-monat-modal-btn"
-                class="btn-confirm blue"
-            >
-                Öffnen &rarr;
-            </button>
-
+            <button type="button" class="btn-cancel" data-close>Abbrechen</button>
+            <button type="button" id="confirm-monat-modal-btn" class="btn-confirm blue">Öffnen &rarr;</button>
         </div>
-
     </div>
-
 </div>
 
-
-
-<!-- ============================================================
-     WOCHENRÜCKBLICK MODAL
-     ============================================================ -->
-
-<div
-    id="kw-modal"
-    class="modal-overlay"
->
-
-    <div class="modal-card">
-
-
+<!-- Modal Wochenrückblick -->
+<div id="kw-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-labelledby="kw-modal-title">
         <div class="modal-header">
-
-            <h2 class="modal-title">
-                Wochenrückblick wählen
-            </h2>
-
-
-            <button
-                type="button"
-                id="close-kw-modal-btn"
-                class="modal-close"
-                aria-label="Schließen"
-            >
-                &times;
-            </button>
-
+            <h2 id="kw-modal-title" class="modal-title">Wochenrückblick wählen</h2>
+            <button type="button" class="modal-close" data-close aria-label="Schließen">&times;</button>
         </div>
-
-
-        <p class="modal-description">
-            Wähle die gewünschte Kalenderwoche aus:
-        </p>
-
-
-        <select
-            id="kw-select"
-            class="custom-select"
-        ></select>
-
-
+        <p class="modal-description">Wähle die gewünschte Kalenderwoche aus:</p>
+        <select id="kw-select" class="custom-select"></select>
         <div class="modal-actions">
-
-            <button
-                type="button"
-                id="cancel-kw-modal-btn"
-                class="btn-cancel"
-            >
-                Abbrechen
-            </button>
-
-
-            <button
-                type="button"
-                id="confirm-kw-modal-btn"
-                class="btn-confirm green"
-            >
-                Öffnen &rarr;
-            </button>
-
+            <button type="button" class="btn-cancel" data-close>Abbrechen</button>
+            <button type="button" id="confirm-kw-modal-btn" class="btn-confirm green">Öffnen &rarr;</button>
         </div>
-
     </div>
-
 </div>
-
-
 
 <script>
-
-
-    /* ============================================================
-       ISO-KALENDERWOCHE
-       ============================================================ */
-
+    /* ISO-Kalenderwoche berechnen */
     function getISOWeekData(d) {
-
-        var date = new Date(
-            Date.UTC(
-                d.getFullYear(),
-                d.getMonth(),
-                d.getDate()
-            )
-        );
-
-        var dayNum = date.getUTCDay() || 7;
-
-        date.setUTCDate(
-            date.getUTCDate() + 4 - dayNum
-        );
-
-        var yearStart = new Date(
-            Date.UTC(
-                date.getUTCFullYear(),
-                0,
-                1
-            )
-        );
-
-        var weekNo = Math.ceil(
-            (
-                (
-                    (date - yearStart) / 86400000
-                ) + 1
-            ) / 7
-        );
-
+        const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const dayNum = date.getUTCDay() || 7;
+        date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
         return {
-            week: weekNo,
+            week: Math.ceil((((date - yearStart) / 86400000) + 1) / 7),
             year: date.getUTCFullYear()
         };
-
     }
-
-
-
-    /* ============================================================
-       AKTUELLES DATUM
-       ============================================================ */
 
     const heute = new Date();
-
-    const aktuellesJahr =
-        heute.getFullYear();
-
-    const aktuellerMonat =
-        heute.getMonth();
-
-
-
-    /* ============================================================
-       MONATSNAMEN
-       ============================================================ */
-
+    const aktuellesJahr = heute.getFullYear();
+    const aktuellerMonat = heute.getMonth();
     const monatsNamen = [
-
-        "Januar",
-        "Februar",
-        "März",
-        "April",
-        "Mai",
-        "Juni",
-        "Juli",
-        "August",
-        "September",
-        "Oktober",
-        "November",
-        "Dezember"
-
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember"
     ];
 
+    /* Dynamic Select Options Generation */
+    function populateSelects() {
+        // Monatsauswahl
+        const monatSelect = document.getElementById('monat-select');
+        let totalOptions = 0;
 
+        const optgroupMonate = document.createElement('optgroup');
+        optgroupMonate.label = "Monatsberichte";
 
-    /* ============================================================
-       MONATSAUSWAHL ERSTELLEN
-       ============================================================ */
-
-    const monatSelect =
-        document.getElementById(
-            'monat-select'
-        );
-
-
-    let totalOptions = 0;
-
-
-
-    /* ------------------------------------------------------------
-       MONATE
-       ------------------------------------------------------------ */
-
-    const optgroupMonate =
-        document.createElement('optgroup');
-
-    optgroupMonate.label =
-        "Monatsberichte";
-
-
-    for (
-        let m = aktuellerMonat - 1;
-        m >= 0;
-        m--
-    ) {
-
-        const monatNummer =
-            String(m + 1).padStart(2, '0');
-
-
-        const option =
-            document.createElement('option');
-
-
-        option.value =
-            `wetter-${aktuellesJahr}/${aktuellesJahr}-${monatNummer}.html`;
-
-
-        option.textContent =
-            `${monatsNamen[m]} ${aktuellesJahr}`;
-
-
-        optgroupMonate.appendChild(
-            option
-        );
-
-
-        totalOptions++;
-
-    }
-
-
-    if (
-        optgroupMonate.children.length > 0
-    ) {
-
-        monatSelect.appendChild(
-            optgroupMonate
-        );
-
-    }
-
-
-
-    /* ------------------------------------------------------------
-       JAHRESZEITEN
-       ------------------------------------------------------------ */
-
-    const optgroupJahreszeiten =
-        document.createElement('optgroup');
-
-    optgroupJahreszeiten.label =
-        "Jahreszeiten";
-
-
-    const jahreszeiten = [
-
-        {
-            name: "Herbst",
-            minMonat: 11,
-            path:
-                `wetter-${aktuellesJahr}/herbst-${aktuellesJahr}.html`
-        },
-
-        {
-            name: "Sommer",
-            minMonat: 8,
-            path:
-                `wetter-${aktuellesJahr}/sommer-${aktuellesJahr}.html`
-        },
-
-        {
-            name: "Frühling",
-            minMonat: 5,
-            path:
-                `wetter-${aktuellesJahr}/fruehling-${aktuellesJahr}.html`
-        },
-
-        {
-            name: "Winter",
-            minMonat: 2,
-            path:
-                `wetter-${aktuellesJahr}/winter-${aktuellesJahr}.html`
-        }
-
-    ];
-
-
-    jahreszeiten.forEach(jz => {
-
-        if (
-            aktuellerMonat >= jz.minMonat
-        ) {
-
-            const option =
-                document.createElement('option');
-
-
-            option.value =
-                jz.path;
-
-
-            option.textContent =
-                `${jz.name} ${aktuellesJahr}`;
-
-
-            optgroupJahreszeiten.appendChild(
-                option
-            );
-
-
+        for (let m = aktuellerMonat - 1; m >= 0; m--) {
+            const monatNummer = String(m + 1).padStart(2, '0');
+            const option = new Option(`${monatsNamen[m]} ${aktuellesJahr}`, `wetter-${aktuellesJahr}/${aktuellesJahr}-${monatNummer}.html`);
+            optgroupMonate.appendChild(option);
             totalOptions++;
+        }
+        if (optgroupMonate.children.length > 0) monatSelect.appendChild(optgroupMonate);
 
+        const optgroupJahreszeiten = document.createElement('optgroup');
+        optgroupJahreszeiten.label = "Jahreszeiten";
+        const jahreszeiten = [
+            { name: "Herbst", minMonat: 11, path: `wetter-${aktuellesJahr}/herbst-${aktuellesJahr}.html` },
+            { name: "Sommer", minMonat: 8, path: `wetter-${aktuellesJahr}/sommer-${aktuellesJahr}.html` },
+            { name: "Frühling", minMonat: 5, path: `wetter-${aktuellesJahr}/fruehling-${aktuellesJahr}.html` },
+            { name: "Winter", minMonat: 2, path: `wetter-${aktuellesJahr}/winter-${aktuellesJahr}.html` }
+        ];
+
+        jahreszeiten.forEach(jz => {
+            if (aktuellerMonat >= jz.minMonat) {
+                optgroupJahreszeiten.appendChild(new Option(`${jz.name} ${aktuellesJahr}`, jz.path));
+                totalOptions++;
+            }
+        });
+        if (optgroupJahreszeiten.children.length > 0) monatSelect.appendChild(optgroupJahreszeiten);
+
+        if (totalOptions === 0) {
+            monatSelect.appendChild(new Option("Juli 2026", "wetter-2026/2026-07.html"));
         }
 
+        // Wochenauswahl
+        const kwSelect = document.getElementById('kw-select');
+        const vorSiebenTagen = new Date(heute.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const { week: maxKW, year: kwJahr } = getISOWeekData(vorSiebenTagen);
+
+        for (let kw = maxKW; kw >= 1; kw--) {
+            kwSelect.appendChild(new Option(`Kalenderwoche ${kw} (${kwJahr})`, `wochen-${kwJahr}/KW${kw}-${kwJahr}.html`));
+        }
+    }
+
+    /* Modal Engine */
+    function initModal(modalId, triggerId, selectId, confirmBtnId) {
+        const modal = document.getElementById(modalId);
+        const trigger = document.getElementById(triggerId);
+        const select = document.getElementById(selectId);
+        const confirmBtn = document.getElementById(confirmBtnId);
+
+        function open() {
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            select.focus();
+        }
+
+        function close() {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        // Event-Listener für Öffnen (Klick & Keyboard)
+        if (trigger) {
+            trigger.addEventListener('click', open);
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    open();
+                }
+            });
+        }
+
+        // Event-Listener für Schließen
+        modal.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        // Bestätigen
+        confirmBtn.addEventListener('click', () => {
+            if (select.value) window.location.href = select.value;
+        });
+
+        // Global Escape Key Listener
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) close();
+        });
+    }
+
+    // Initialisierung
+    document.addEventListener('DOMContentLoaded', () => {
+        populateSelects();
+        initModal('monat-modal', 'open-monat-card', 'monat-select', 'confirm-monat-modal-btn');
+        initModal('kw-modal', 'open-kw-card', 'kw-select', 'confirm-kw-modal-btn');
     });
-
-
-    if (
-        optgroupJahreszeiten.children.length > 0
-    ) {
-
-        monatSelect.appendChild(
-            optgroupJahreszeiten
-        );
-
-    }
-
-
-
-    /* ------------------------------------------------------------
-       FALLBACK
-       ------------------------------------------------------------ */
-
-    if (totalOptions === 0) {
-
-        const option =
-            document.createElement('option');
-
-
-        option.value =
-            `wetter-2026/2026-07.html`;
-
-
-        option.textContent =
-            `Juli 2026`;
-
-
-        monatSelect.appendChild(
-            option
-        );
-
-    }
-
-
-
-    /* ============================================================
-       KALENDERWOCHEN ERSTELLEN
-       ============================================================ */
-
-    const kwSelect =
-        document.getElementById(
-            'kw-select'
-        );
-
-
-    const vorSiebenTagen =
-        new Date(
-            heute.getTime()
-            -
-            7 * 24 * 60 * 60 * 1000
-        );
-
-
-    const letzteAbgeschlosseneKWData =
-        getISOWeekData(
-            vorSiebenTagen
-        );
-
-
-    const maxKW =
-        letzteAbgeschlosseneKWData.week;
-
-
-    const kwJahr =
-        letzteAbgeschlosseneKWData.year;
-
-
-
-    for (
-        let kw = maxKW;
-        kw >= 1;
-        kw--
-    ) {
-
-        const option =
-            document.createElement('option');
-
-
-        option.value =
-            `wochen-${kwJahr}/KW${kw}-${kwJahr}.html`;
-
-
-        option.textContent =
-            `Kalenderwoche ${kw} (${kwJahr})`;
-
-
-        kwSelect.appendChild(
-            option
-        );
-
-    }
-
-
-
-    /* ============================================================
-       MODAL-FUNKTION
-       ============================================================ */
-
-    function setupModal(
-        modalId,
-        openBtnId,
-        closeBtnId,
-        cancelBtnId,
-        confirmBtnId,
-        selectId
-    ) {
-
-        const modal =
-            document.getElementById(
-                modalId
-            );
-
-
-        const openBtn =
-            document.getElementById(
-                openBtnId
-            );
-
-
-        const closeBtn =
-            document.getElementById(
-                closeBtnId
-            );
-
-
-        const cancelBtn =
-            document.getElementById(
-                cancelBtnId
-            );
-
-
-        const confirmBtn =
-            document.getElementById(
-                confirmBtnId
-            );
-
-
-        const select =
-            document.getElementById(
-                selectId
-            );
-
-
-
-        function openModal() {
-
-            modal.classList.add(
-                'active'
-            );
-
-        }
-
-
-
-        function closeModal() {
-
-            modal.classList.remove(
-                'active'
-            );
-
-        }
-
-
-
-        openBtn.addEventListener(
-            'click',
-            openModal
-        );
-
-
-        closeBtn.addEventListener(
-            'click',
-            closeModal
-        );
-
-
-        cancelBtn.addEventListener(
-            'click',
-            closeModal
-        );
-
-
-
-        /* Klick auf den dunklen Hintergrund
-           schließt das Popup */
-
-        modal.addEventListener(
-            'click',
-            function(e) {
-
-                if (
-                    e.target === modal
-                ) {
-
-                    closeModal();
-
-                }
-
-            }
-        );
-
-
-
-        /* Öffnen-Button */
-
-        confirmBtn.addEventListener(
-            'click',
-            function() {
-
-                if (select.value) {
-
-                    window.location.href =
-                        select.value;
-
-                }
-
-            }
-        );
-
-    }
-
-
-
-    /* ============================================================
-       WOCHEN-MODAL EINRICHTEN
-       ============================================================ */
-
-    setupModal(
-        'kw-modal',
-        'open-kw-modal-btn',
-        'close-kw-modal-btn',
-        'cancel-kw-modal-btn',
-        'confirm-kw-modal-btn',
-        'kw-select'
-    );
-
-
-
-    /* ============================================================
-       MONATS-MODAL
-       ============================================================ */
-
-    const monatCard =
-        document.getElementById(
-            'open-monat-card'
-        );
-
-
-    const monatModal =
-        document.getElementById(
-            'monat-modal'
-        );
-
-
-    const closeMonatModal =
-        document.getElementById(
-            'close-monat-modal-btn'
-        );
-
-
-    const cancelMonatModal =
-        document.getElementById(
-            'cancel-monat-modal-btn'
-        );
-
-
-    const confirmMonatModal =
-        document.getElementById(
-            'confirm-monat-modal-btn'
-        );
-
-
-
-    /* ------------------------------------------------------------
-       KLICK AUF DIE GESAMTE KACHEL
-       ------------------------------------------------------------ */
-
-    monatCard.addEventListener(
-        'click',
-        function() {
-
-            monatModal.classList.add(
-                'active'
-            );
-
-        }
-    );
-
-
-
-    /* ------------------------------------------------------------
-       SCHLIESSEN ÜBER X
-       ------------------------------------------------------------ */
-
-    closeMonatModal.addEventListener(
-        'click',
-        function() {
-
-            monatModal.classList.remove(
-                'active'
-            );
-
-        }
-    );
-
-
-
-    /* ------------------------------------------------------------
-       SCHLIESSEN ÜBER ABBRECHEN
-       ------------------------------------------------------------ */
-
-    cancelMonatModal.addEventListener(
-        'click',
-        function() {
-
-            monatModal.classList.remove(
-                'active'
-            );
-
-        }
-    );
-
-
-
-    /* ------------------------------------------------------------
-       SCHLIESSEN BEI KLICK AUF HINTERGRUND
-       ------------------------------------------------------------ */
-
-    monatModal.addEventListener(
-        'click',
-        function(e) {
-
-            if (
-                e.target === monatModal
-            ) {
-
-                monatModal.classList.remove(
-                    'active'
-                );
-
-            }
-
-        }
-    );
-
-
-
-    /* ------------------------------------------------------------
-       MONATSBERICHT ÖFFNEN
-       ------------------------------------------------------------ */
-
-    confirmMonatModal.addEventListener(
-        'click',
-        function() {
-
-            if (
-                monatSelect.value
-            ) {
-
-                window.location.href =
-                    monatSelect.value;
-
-            }
-
-        }
-    );
-
-
-
-    /* ============================================================
-       TASTATURBEDIENUNG FÜR DIE MONATSKACHEL
-       ============================================================ */
-
-    monatCard.addEventListener(
-        'keydown',
-        function(e) {
-
-            if (
-                e.key === 'Enter' ||
-                e.key === ' '
-            ) {
-
-                e.preventDefault();
-
-                monatModal.classList.add(
-                    'active'
-                );
-
-            }
-
-        }
-    );
-
-
 </script>
 
 </body>
