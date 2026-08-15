@@ -221,7 +221,7 @@
             color: var(--text-main);
         }
 
-        .kw-select {
+        .custom-select {
             width: 100%;
             padding: 12px 15px;
             border-radius: 8px;
@@ -236,7 +236,11 @@
             box-sizing: border-box;
         }
 
-        .kw-select:focus {
+        .custom-select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        #kw-modal .custom-select:focus {
             border-color: var(--accent-green);
         }
 
@@ -262,7 +266,6 @@
         }
 
         .btn-confirm {
-            background-color: var(--accent-green);
             color: #ffffff;
             border: none;
             padding: 12px 20px;
@@ -270,6 +273,14 @@
             font-weight: 600;
             cursor: pointer;
             width: 60%;
+        }
+
+        .btn-confirm.blue {
+            background-color: var(--accent-blue);
+        }
+
+        .btn-confirm.green {
+            background-color: var(--accent-green);
         }
 
         .btn-confirm:hover {
@@ -286,7 +297,7 @@
     </div>
 
     <div class="selection-grid">
-        <a href="wetter-2026/2026-07.html" class="portal-card monate">
+        <div class="portal-card monate">
             <div>
                 <div class="card-icon">📅</div>
                 <div class="card-title">Monats- & Jahreszeitenrückblicke</div>
@@ -294,8 +305,8 @@
                     Große Gesamtübersichten pro Monat und Jahreszeit inklusive DWD-Klimamittelvergleich, Extremwerten und Kenntagen.
                 </div>
             </div>
-            <div class="card-btn">Zu den Monatsberichten &rarr;</div>
-        </a>
+            <button type="button" id="open-monate-modal-btn" class="card-btn">Zu den Monatsberichten &rarr;</button>
+        </div>
 
         <div class="portal-card wochen">
             <div>
@@ -305,27 +316,47 @@
                     Detailreiche Wochenauswertungen mit hochaufgelösten Temperaturverläufen, täglichen Min/Max-Werten und Wochenstatistiken.
                 </div>
             </div>
-            <button type="button" id="open-modal-btn" class="card-btn">Zu den Wochenberichten &rarr;</button>
+            <button type="button" id="open-kw-modal-btn" class="card-btn">Zu den Wochenberichten &rarr;</button>
         </div>
     </div>
 </div>
 
-<!-- Modal-Fenster für Wochenauswahl -->
+<!-- Modal Monats- & Jahreszeitenauswahl -->
+<div id="monate-modal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Bericht auswählen</h2>
+            <button type="button" id="close-monate-modal-btn" class="modal-close">&times;</button>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0; margin-bottom: 20px;">
+            Wähle den gewünschten Auswertungszeitraum aus:
+        </p>
+        <select id="monate-select" class="custom-select">
+            <!-- Wird per JS dynamisch befüllt -->
+        </select>
+        <div class="modal-actions">
+            <button type="button" id="cancel-monate-modal-btn" class="btn-cancel">Abbrechen</button>
+            <button type="button" id="confirm-monate-modal-btn" class="btn-confirm blue">Öffnen &rarr;</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Wochenauswahl -->
 <div id="kw-modal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
             <h2 class="modal-title">Wochenrückblick wählen</h2>
-            <button type="button" id="close-modal-btn" class="modal-close">&times;</button>
+            <button type="button" id="close-kw-modal-btn" class="modal-close">&times;</button>
         </div>
         <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0; margin-bottom: 20px;">
             Wähle die gewünschte Kalenderwoche aus:
         </p>
-        <select id="kw-select" class="kw-select">
-            <!-- Wird per JS dynamisch gefüllt -->
+        <select id="kw-select" class="custom-select">
+            <!-- Wird per JS dynamisch befüllt -->
         </select>
         <div class="modal-actions">
-            <button type="button" id="cancel-modal-btn" class="btn-cancel">Abbrechen</button>
-            <button type="button" id="confirm-modal-btn" class="btn-confirm">Öffnen &rarr;</button>
+            <button type="button" id="cancel-kw-modal-btn" class="btn-cancel">Abbrechen</button>
+            <button type="button" id="confirm-kw-modal-btn" class="btn-confirm green">Öffnen &rarr;</button>
         </div>
     </div>
 </div>
@@ -343,57 +374,109 @@
         };
     }
 
-    // Heutiges Datum abrufen & 7 Tage zurückrechnen (letzte abgeschlossene Woche)
     const heute = new Date();
+    const aktuellesJahr = heute.getFullYear();
+    const aktuellerMonat = heute.getMonth() + 1; // 1 - 12
+
+    // --- 1. MONATS- & JAHRESZEITEN-MODAL BEFÜLLEN ---
+    const monateSelect = document.getElementById('monate-select');
+
+    // Jahresrückblick des Vorjahres (falls verfügbar)
+    const optVorjahr = document.createElement('option');
+    optVorjahr.value = `wetter-${aktuellesJahr - 1}/jahr-${aktuellesJahr - 1}.html`;
+    optVorjahr.textContent = `Jahresrückblick ${aktuellesJahr - 1}`;
+    monateSelect.appendChild(optVorjahr);
+
+    // Trennlinie / Gruppe für das aktuelle Jahr
+    const groupJahr = document.createElement('optgroup');
+    groupJahr.label = `--- Berichte ${aktuellesJahr} ---`;
+
+    // 1.1 Aktuelles Jahr
+    const optJahr = document.createElement('option');
+    optJahr.value = `wetter-${aktuellesJahr}/jahr-${aktuellesJahr}.html`;
+    optJahr.textContent = `Jahresrückblick ${aktuellesJahr}`;
+    groupJahr.appendChild(optJahr);
+
+    // 1.2 Abgeschlossene Jahreszeiten
+    const jahreszeiten = [
+        { name: 'Winter (Dez-Feb)', file: 'winter', maxMonat: 3 },
+        { name: 'Frühling (Mär-Mai)', file: 'fruehling', maxMonat: 6 },
+        { name: 'Sommer (Jun-Aug)', file: 'sommer', maxMonat: 9 },
+        { name: 'Herbst (Sep-Nov)', file: 'herbst', maxMonat: 12 }
+    ];
+
+    jahreszeiten.forEach(jz => {
+        if (aktuellerMonat >= jz.maxMonat) {
+            const opt = document.createElement('option');
+            opt.value = `wetter-${aktuellesJahr}/${jz.file}-${aktuellesJahr}.html`;
+            opt.textContent = `Jahreszeit: ${jz.name} ${aktuellesJahr}`;
+            groupJahr.appendChild(opt);
+        }
+    });
+
+    // 1.3 Abgeschlossene Monate (absteigend)
+    const monatsNamen = [
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember"
+    ];
+
+    for (let m = aktuellerMonat - 1; m >= 1; m--) {
+        const monatFormatted = String(m).padStart(2, '0');
+        const opt = document.createElement('option');
+        opt.value = `wetter-${aktuellesJahr}/${aktuellesJahr}-${monatFormatted}.html`;
+        opt.textContent = `Monat: ${monatsNamen[m - 1]} ${aktuellesJahr}`;
+        groupJahr.appendChild(opt);
+    }
+
+    monateSelect.appendChild(groupJahr);
+
+
+    // --- 2. WOCHEN-MODAL BEFÜLLEN ---
     const vorSiebenTagen = new Date(heute.getTime() - 7 * 24 * 60 * 60 * 1000);
     const letzteAbgeschlosseneKWData = getISOWeekData(vorSiebenTagen);
-    
     const maxKW = letzteAbgeschlosseneKWData.week;
-    const jahr = letzteAbgeschlosseneKWData.year;
+    const kwJahr = letzteAbgeschlosseneKWData.year;
 
-    // Dropdown mit allen vergangenen KWen befüllen
-    const selectElement = document.getElementById('kw-select');
+    const kwSelect = document.getElementById('kw-select');
     for (let kw = maxKW; kw >= 1; kw--) {
         const option = document.createElement('option');
-        option.value = `wochen-${jahr}/KW${kw}-${jahr}.html`;
-        option.textContent = `Kalenderwoche ${kw} (${jahr})`;
-        selectElement.appendChild(option);
+        option.value = `wochen-${kwJahr}/KW${kw}-${kwJahr}.html`;
+        option.textContent = `Kalenderwoche ${kw} (${kwJahr})`;
+        kwSelect.appendChild(option);
     }
 
-    // Modal Logik
-    const modal = document.getElementById('kw-modal');
-    const openBtn = document.getElementById('open-modal-btn');
-    const closeBtn = document.getElementById('close-modal-btn');
-    const cancelBtn = document.getElementById('cancel-modal-btn');
-    const confirmBtn = document.getElementById('confirm-modal-btn');
 
-    function openModal() {
-        modal.classList.add('active');
+    // --- 3. MODAL STEUERUNG (ALLGEMEIN) ---
+    function setupModal(openBtnId, closeBtnId, cancelBtnId, confirmBtnId, modalId, selectId) {
+        const modal = document.getElementById(modalId);
+        const openBtn = document.getElementById(openBtnId);
+        const closeBtn = document.getElementById(closeBtnId);
+        const cancelBtn = document.getElementById(cancelBtnId);
+        const confirmBtn = document.getElementById(confirmBtnId);
+        const select = document.getElementById(selectId);
+
+        function open() { modal.classList.add('active'); }
+        function close() { modal.classList.remove('active'); }
+
+        openBtn.addEventListener('click', open);
+        closeBtn.addEventListener('click', close);
+        cancelBtn.addEventListener('click', close);
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) close();
+        });
+
+        confirmBtn.addEventListener('click', function() {
+            if (select.value) {
+                window.location.href = select.value;
+            }
+        });
     }
 
-    function closeModal() {
-        modal.classList.remove('active');
-    }
-
-    openBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-
-    confirmBtn.addEventListener('click', function() {
-        if (selectElement.value) {
-            window.location.href = selectElement.value;
-        }
-    });
+    // Modals initialisieren
+    setupModal('open-monate-modal-btn', 'close-monate-modal-btn', 'cancel-monate-modal-btn', 'confirm-monate-modal-btn', 'monate-modal', 'monate-select');
+    setupModal('open-kw-modal-btn', 'close-kw-modal-btn', 'cancel-kw-modal-btn', 'confirm-kw-modal-btn', 'kw-modal', 'kw-select');
 </script>
-
-</body>
-</html>
 
 </body>
 </html>
