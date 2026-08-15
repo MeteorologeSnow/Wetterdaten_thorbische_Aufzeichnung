@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wetterstation Garten – Übersicht</title>
+
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-main: #0f172a;
+                --card-bg: #1e293b;
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+                --border-color: #334155;
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 30px 20px;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .portal-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+        }
+
+        .portal-card.monate::before {
+            background-color: var(--accent-blue);
+        }
+
+        .portal-card.wochen::before {
+            background-color: var(--accent-green);
+        }
+
+        .portal-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        .card-btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .portal-card.monate .card-btn {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        .portal-card.wochen .card-btn {
+            background-color: var(--accent-green);
+            color: #ffffff;
+        }
+
+        .portal-card:hover .card-btn {
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Wetterstation Garten</h1>
+        <p>Wähle den gewünschten Auswertungszeitraum</p>
+    </div>
+
+    <div class="selection-grid">
+        <a href="wetter-2026/2026-07.html" class="portal-card monate">
+            <div>
+                <div class="card-icon">📅</div>
+                <div class="card-title">Monats- & Jahreszeitenrückblicke</div>
+                <div class="card-desc">
+                    Große Gesamtübersichten pro Monat und Jahreszeit inklusive DWD-Klimamittelvergleich, Extremwerten und Kenntagen.
+                </div>
+            </div>
+            <div class="card-btn">Zu den Monatsberichten &rarr;</div>
+        </a>
+
+        <a id="wochen-link" href="wochen-2026/KW27-2026.html" class="portal-card wochen">
+            <div>
+                <div class="card-icon">📈</div>
+                <div class="card-title">Wochenrückblicke</div>
+                <div class="card-desc">
+                    Detailreiche Wochenauswertungen mit hochaufgelösten Temperaturverläufen, täglichen Min/Max-Werten und Wochenstatistiken.
+                </div>
+            </div>
+            <div class="card-btn">Zu den Wochenberichten &rarr;</div>
+        </a>
+    </div>
+</div>
+
+<script>
+    function getISOWeekData(d) {
+        var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        var dayNum = date.getUTCDay() || 7;
+        date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+        var yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+        var weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+        return {
+            week: weekNo,
+            year: date.getUTCFullYear()
+        };
+    }
+
+    const heute = new Date();
+    const vorSiebenTagen = new Date(heute.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const letzteWocheData = getISOWeekData(vorSiebenTagen);
+    const kw = letzteWocheData.week;
+    const jahr = letzteWocheData.year;
+
+    const zielPfad = `wochen-${jahr}/KW${kw}-${jahr}.html`;
+
+    const wochenLinkElement = document.getElementById('wochen-link');
+    if (wochenLinkElement) {
+        wochenLinkElement.href = zielPfad;
+    }
+</script>
+
+</body>
+</html>
