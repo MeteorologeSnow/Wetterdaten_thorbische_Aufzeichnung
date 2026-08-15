@@ -152,7 +152,7 @@
             filter: brightness(1.1);
         }
 
-        /* Modal Overlay Styles */
+        /* Modal / Dialog Fenster Styling */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -181,13 +181,12 @@
             background: var(--card-bg);
             border-radius: 16px;
             padding: 30px;
-            max-width: 450px;
+            max-width: 420px;
             width: 100%;
             border: 1px solid var(--border-color);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             transform: scale(0.95);
             transition: transform 0.25s ease;
-            position: relative;
         }
 
         .modal-overlay.active .modal-card {
@@ -198,7 +197,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .modal-title {
@@ -306,26 +305,27 @@
                     Detailreiche Wochenauswertungen mit hochaufgelösten Temperaturverläufen, täglichen Min/Max-Werten und Wochenstatistiken.
                 </div>
             </div>
-            <button id="open-modal-btn" class="card-btn">Zu den Wochenberichten &rarr;</button>
+            <button type="button" id="open-modal-btn" class="card-btn">Zu den Wochenberichten &rarr;</button>
         </div>
     </div>
 </div>
 
+<!-- Modal-Fenster für Wochenauswahl -->
 <div id="kw-modal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-header">
             <h2 class="modal-title">Wochenrückblick wählen</h2>
-            <button id="close-modal-btn" class="modal-close">&times;</button>
+            <button type="button" id="close-modal-btn" class="modal-close">&times;</button>
         </div>
         <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0; margin-bottom: 20px;">
             Wähle die gewünschte Kalenderwoche aus:
         </p>
         <select id="kw-select" class="kw-select">
-            <!-- Optionen werden dynamisch via JS befüllt -->
+            <!-- Wird per JS dynamisch gefüllt -->
         </select>
         <div class="modal-actions">
-            <button id="cancel-modal-btn" class="btn-cancel">Abbrechen</button>
-            <button id="confirm-modal-btn" class="btn-confirm">Öffnen &rarr;</button>
+            <button type="button" id="cancel-modal-btn" class="btn-cancel">Abbrechen</button>
+            <button type="button" id="confirm-modal-btn" class="btn-confirm">Öffnen &rarr;</button>
         </div>
     </div>
 </div>
@@ -343,6 +343,7 @@
         };
     }
 
+    // Heutiges Datum abrufen & 7 Tage zurückrechnen (letzte abgeschlossene Woche)
     const heute = new Date();
     const vorSiebenTagen = new Date(heute.getTime() - 7 * 24 * 60 * 60 * 1000);
     const letzteAbgeschlosseneKWData = getISOWeekData(vorSiebenTagen);
@@ -350,8 +351,8 @@
     const maxKW = letzteAbgeschlosseneKWData.week;
     const jahr = letzteAbgeschlosseneKWData.year;
 
+    // Dropdown mit allen vergangenen KWen befüllen
     const selectElement = document.getElementById('kw-select');
-
     for (let kw = maxKW; kw >= 1; kw--) {
         const option = document.createElement('option');
         option.value = `wochen-${jahr}/KW${kw}-${jahr}.html`;
@@ -359,6 +360,7 @@
         selectElement.appendChild(option);
     }
 
+    // Modal Logik
     const modal = document.getElementById('kw-modal');
     const openBtn = document.getElementById('open-modal-btn');
     const closeBtn = document.getElementById('close-modal-btn');
@@ -389,6 +391,9 @@
         }
     });
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
