@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wetterstation Garten – Übersicht</title>
+
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 12px 28px rgba(0, 0, 0, 0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-main: #0f172a;
+                --card-bg: #1e293b;
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+                --border-color: #334155;
+            }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* --- KACHELN --- */
+        .portal-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+        }
+
+        .portal-card.monate::before { background-color: var(--accent-blue); }
+        .portal-card.wochen::before { background-color: var(--accent-green); }
+
+        .portal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .portal-card:focus-visible {
+            outline: 3px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            flex-grow: 1;
+        }
+
+        .card-btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            transition: filter 0.2s ease;
+        }
+
+        .portal-card.monate .card-btn {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        .portal-card.wochen .card-btn {
+            background-color: var(--accent-green);
+            color: #ffffff;
+        }
+
+        .portal-card:hover .card-btn {
+            filter: brightness(1.1);
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 420px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-main);
+            background-color: var(--border-color);
+        }
+
+        .modal-description {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .custom-select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .custom-select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        #kw-modal .custom-select:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 40%;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-confirm {
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 60%;
+            transition: filter 0.2s ease;
+        }
+
+        .btn-confirm.blue { background-color: var(--accent-blue); }
+        .btn-confirm.green { background-color: var(--accent-green); }
+
+        .btn-confirm:hover {
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Wetterstation Garten</h1>
+        <p>Wähle den gewünschten Auswertungszeitraum</p>
+    </div>
+
+    <div class="selection-grid">
+        <!-- Monatskachel -->
+        <div class="portal-card monate" id="open-monat-card" role="button" tabindex="0" aria-label="Monats- und Jahresrückblick auswählen">
+            <div>
+                <div class="card-icon">📅</div>
+                <div class="card-title">Monats- & Jahreszeitenrückblicke</div>
+                <div class="card-desc">
+                    Große Gesamtübersichten pro Monat und Jahreszeit inklusive DWD-Klimamittelvergleich, Extremwerten und Kenntagen.
+                </div>
+            </div>
+            <button type="button" id="open-monat-modal-btn" class="card-btn">Zu den Berichten &rarr;</button>
+        </div>
+
+        <!-- Wochenkachel -->
+        <div class="portal-card wochen" id="open-kw-card" role="button" tabindex="0" aria-label="Wochenrückblick auswählen">
+            <div>
+                <div class="card-icon">📈</div>
+                <div class="card-title">Wochenrückblicke</div>
+                <div class="card-desc">
+                    Detailreiche Wochenauswertungen mit hochaufgelösten Temperaturverläufen, täglichen Min/Max-Werten und Wochenstatistiken.
+                </div>
+            </div>
+            <button type="button" id="open-kw-modal-btn" class="card-btn">Zu den Wochenberichten &rarr;</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Monats-, Jahreszeiten- & Jahresrückblick -->
+<div id="monat-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-labelledby="monat-modal-title">
+        <div class="modal-header">
+            <h2 id="monat-modal-title" class="modal-title">Auswertung wählen</h2>
+            <button type="button" class="modal-close" data-close aria-label="Schließen">&times;</button>
+        </div>
+        <p class="modal-description">Wähle den gewünschten Zeitraum aus:</p>
+        <select id="monat-select" class="custom-select"></select>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" data-close>Abbrechen</button>
+            <button type="button" id="confirm-monat-modal-btn" class="btn-confirm blue">Öffnen &rarr;</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Wochenrückblick -->
+<div id="kw-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-labelledby="kw-modal-title">
+        <div class="modal-header">
+            <h2 id="kw-modal-title" class="modal-title">Wochenrückblick wählen</h2>
+            <button type="button" class="modal-close" data-close aria-label="Schließen">&times;</button>
+        </div>
+        <p class="modal-description">Wähle die gewünschte Kalenderwoche aus:</p>
+        <select id="kw-select" class="custom-select"></select>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" data-close>Abbrechen</button>
+            <button type="button" id="confirm-kw-modal-btn" class="btn-confirm green">Öffnen &rarr;</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ISO-Kalenderwoche berechnen */
+    function getISOWeekData(d) {
+        const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const dayNum = date.getUTCDay() || 7;
+        date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+        return {
+            week: Math.ceil((((date - yearStart) / 86400000) + 1) / 7),
+            year: date.getUTCFullYear()
+        };
+    }
+
+    const heute = new Date();
+    const aktuellesJahr = heute.getFullYear();
+    const aktuellerMonat = heute.getMonth(); // 0 = Januar, 11 = Dezember
+    const monatsNamen = [
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember"
+    ];
+
+    /* Generierung der Dropdown-Optionen für abgelaufene Zeiträume (Startjahr 2026) */
+    function populateSelects() {
+        const START_JAHR = 2026;
+        const monatSelect = document.getElementById('monat-select');
+
+        // 1. Abgeschlossene Monate
+        const optgroupMonate = document.createElement('optgroup');
+        optgroupMonate.label = "Abgeschlossene Monate";
+
+        for (let y = aktuellesJahr; y >= START_JAHR; y--) {
+            const maxM = (y === aktuellesJahr) ? aktuellerMonat - 1 : 11;
+            for (let m = maxM; m >= 0; m--) {
+                const monatNummer = String(m + 1).padStart(2, '0');
+                const option = new Option(`${monatsNamen[m]} ${y}`, `wetter-${y}/${y}-${monatNummer}.html`);
+                optgroupMonate.appendChild(option);
+            }
+        }
+        if (optgroupMonate.children.length > 0) {
+            monatSelect.appendChild(optgroupMonate);
+        }
+
+        // 2. Abgeschlossene meteorologische Jahreszeiten
+        // Format: wetter-YYYY/YYYY-fruhling.html, YYYY-sommer.html, YYYY-herbst.html, YYYY-winter.html
+        const optgroupJahreszeiten = document.createElement('optgroup');
+        optgroupJahreszeiten.label = "Abgeschlossene Jahreszeiten";
+
+        for (let y = aktuellesJahr; y >= START_JAHR; y--) {
+            // Herbst (Sept - Nov, abgeschlossen ab 1. Dez -> Monat >= 11)
+            if (y < aktuellesJahr || aktuellerMonat >= 11) {
+                optgroupJahreszeiten.appendChild(new Option(`Herbst ${y}`, `wetter-${y}/${y}-herbst.html`));
+            }
+            // Sommer (Juni - Aug, abgeschlossen ab 1. Sept -> Monat >= 8)
+            if (y < aktuellesJahr || aktuellerMonat >= 8) {
+                optgroupJahreszeiten.appendChild(new Option(`Sommer ${y}`, `wetter-${y}/${y}-sommer.html`));
+            }
+            // Frühling (März - Mai, abgeschlossen ab 1. Juni -> Monat >= 5)
+            if (y < aktuellesJahr || aktuellerMonat >= 5) {
+                optgroupJahreszeiten.appendChild(new Option(`Frühling ${y}`, `wetter-${y}/${y}-fruhling.html`));
+            }
+            // Winter (Dez - Feb, abgeschlossen ab 1. März -> Monat >= 2)
+            if (y < aktuellesJahr || aktuellerMonat >= 2) {
+                optgroupJahreszeiten.appendChild(new Option(`Winter ${y}`, `wetter-${y}/${y}-winter.html`));
+            }
+        }
+
+        if (optgroupJahreszeiten.children.length > 0) {
+            monatSelect.appendChild(optgroupJahreszeiten);
+        }
+
+        // 3. Abgeschlossene Jahre (Jahresrückblicke ab 2026)
+        const optgroupJahre = document.createElement('optgroup');
+        optgroupJahre.label = "Jahresrückblicke";
+
+        for (let y = aktuellesJahr - 1; y >= START_JAHR; y--) {
+            optgroupJahre.appendChild(new Option(`Jahresrückblick ${y}`, `wetter-${y}/jahr-${y}.html`));
+        }
+        if (optgroupJahre.children.length > 0) {
+            monatSelect.appendChild(optgroupJahre);
+        }
+
+        // Fallback
+        if (monatSelect.children.length === 0) {
+            monatSelect.appendChild(new Option("Keine abgeschlossenen Berichte verfügbar.", ""));
+        }
+
+        // 4. Wochenauswahl
+        const kwSelect = document.getElementById('kw-select');
+        const vorSiebenTagen = new Date(heute.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const { week: maxKW, year: kwJahr } = getISOWeekData(vorSiebenTagen);
+
+        // Generiert Wochen vom aktuellen Stand rückwärts bis KW 1 des START_JAHRs (2026)
+        for (let y = kwJahr; y >= START_JAHR; y--) {
+            const startKW = (y === kwJahr) ? maxKW : 52;
+
+            for (let kw = startKW; kw >= 1; kw--) {
+                const option = new Option(
+                    `Kalenderwoche ${kw} (${y})`,
+                    `wochen-${y}/KW${kw}.html`
+                );
+                kwSelect.appendChild(option);
+            }
+        }
+
+        // Fallback für KW-Select
+        if (kwSelect.children.length === 0) {
+            kwSelect.appendChild(new Option("Keine abgeschlossenen Wochen verfügbar.", ""));
+        }
+    }
+
+    /* Modal Steuerung */
+    function initModal(modalId, triggerId, selectId, confirmBtnId) {
+        const modal = document.getElementById(modalId);
+        const trigger = document.getElementById(triggerId);
+        const select = document.getElementById(selectId);
+        const confirmBtn = document.getElementById(confirmBtnId);
+
+        function open() {
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+            select.focus();
+        }
+
+        function close() {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        if (trigger) {
+            trigger.addEventListener('click', open);
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    open();
+                }
+            });
+        }
+
+        modal.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', close));
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        confirmBtn.addEventListener('click', () => {
+            if (select.value) window.location.href = select.value;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) close();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        populateSelects();
+        initModal('monat-modal', 'open-monat-card', 'monat-select', 'confirm-monat-modal-btn');
+        initModal('kw-modal', 'open-kw-card', 'kw-select', 'confirm-kw-modal-btn');
+    });
+</script>
+
+</body>
+</html>
