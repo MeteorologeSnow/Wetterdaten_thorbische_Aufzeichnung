@@ -424,7 +424,7 @@
             }
             // Winter (Dez - Feb, abgeschlossen ab 1. März -> Monat >= 2)
             if (y < aktuellesJahr || aktuellerMonat >= 2) {
-                optgroupJahreszeiten.appendChild(new Option(`Winter ${y}`, `wetter-${y}/${y}-winter.html`));
+                optgroupJahreszeiten.appendChild(new Option(`Winter ${y-1}`, `wetter-${y}/${y-1}-winter.html`));
             }
         }
 
